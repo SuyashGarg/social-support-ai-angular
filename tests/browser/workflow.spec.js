@@ -95,3 +95,42 @@ test("AI failure keeps entered description intact", async ({ page }) => {
     "My original description.",
   );
 });
+
+test("National ID keeps its mask during typing, paste and editing in both languages", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const id = page.locator("#nationalId");
+  await id.pressSequentially("784203212323235");
+  await expect(id).toHaveValue("784-2032-1232323-5");
+  await id.fill("٧٨٤٢٠٣٢١٢٣٢٣٢٣٥");
+  await expect(id).toHaveValue("784-2032-1232323-5");
+  await id.fill("784-2032-1232323-599");
+  await expect(id).toHaveValue("784-2032-1232323-5");
+  await id.evaluate((el) => {
+    el.focus();
+    el.setSelectionRange(4, 4);
+  });
+  await id.press("Backspace");
+  await expect(id).toHaveValue("782-0321-2323235");
+  await id.fill("784203212323235");
+  await id.evaluate((el) => {
+    el.focus();
+    el.setSelectionRange(3, 3);
+  });
+  await id.press("Delete");
+  await expect(id).toHaveValue("784-0321-2323235");
+  await id.fill("784203212323235");
+  await id.evaluate((el) => {
+    el.focus();
+    el.setSelectionRange(4, 8);
+  });
+  await id.pressSequentially("1990");
+  await expect(id).toHaveValue("784-1990-1232323-5");
+  await page.getByRole("button", { name: "Change language" }).click();
+  await expect(id).toHaveAttribute("dir", "ltr");
+  await id.fill("۷۸۴۱۹۹۰۱۲۳۴۵۶۷۱");
+  await expect(id).toHaveValue("784-1990-1234567-1");
+  await page.reload();
+  await expect(id).toHaveValue("784-1990-1234567-1");
+});

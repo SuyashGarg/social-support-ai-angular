@@ -22,8 +22,10 @@ import { Country, State } from "country-state-city";
             (click)="s.language.set(s.language() === 'en' ? 'ar' : 'en')"
             aria-label="Change language"
           >
-            {{ s.language() === "en" ? "العربية" : "English" }}</button
-          ><a routerLink="/history">{{ s.t("app.history") }}</a>
+            {{ s.language() === "en" ? "العربية" : "English" }}</button><a
+            routerLink="/history"
+            >{{ s.t("app.history") }}</a
+          >
         </nav>
       </div>
     </header>
@@ -93,8 +95,66 @@ export class WorkspaceComponent implements OnDestroy {
   value(name: string) {
     return String(this.s.values()[name] ?? "");
   }
+  private idDigits(value: string) {
+    return value
+      .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x660))
+      .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x6f0))
+      .replace(/\D/g, "");
+  }
+  private formatId(value: string) {
+    const digits = this.idDigits(value).slice(0, 15);
+    return [
+      digits.slice(0, 3),
+      digits.slice(3, 7),
+      digits.slice(7, 14),
+      digits.slice(14, 15),
+    ]
+      .filter(Boolean)
+      .join("-");
+  }
+  private updateId(target: HTMLInputElement) {
+    const digitsBefore = this.idDigits(
+      target.value.slice(0, target.selectionStart ?? target.value.length),
+    ).length;
+    const formatted = this.formatId(target.value);
+    let caret = 0,
+      count = 0;
+    while (caret < formatted.length && count < digitsBefore) {
+      if (/\d/.test(formatted[caret])) count++;
+      caret++;
+    }
+    target.value = formatted;
+    this.s.set("nationalId", formatted);
+    target.setSelectionRange(caret, caret);
+  }
+  beforeIdInput(event: Event, name: string) {
+    if (name !== "nationalId") return;
+    const input = event as InputEvent;
+    const target = input.target as HTMLInputElement;
+    const start = target.selectionStart ?? 0;
+    if (start !== target.selectionEnd) return;
+    const backward = input.inputType === "deleteContentBackward";
+    const forward = input.inputType === "deleteContentForward";
+    if (backward && target.value[start - 1] === "-") {
+      event.preventDefault();
+      target.value =
+        target.value.slice(0, start - 2) + target.value.slice(start);
+      target.setSelectionRange(start - 2, start - 2);
+      this.updateId(target);
+    } else if (forward && target.value[start] === "-") {
+      event.preventDefault();
+      target.value =
+        target.value.slice(0, start) + target.value.slice(start + 2);
+      target.setSelectionRange(start, start);
+      this.updateId(target);
+    }
+  }
   change(event: Event, name: string) {
     const target = event.target as HTMLInputElement;
+    if (name === "nationalId") {
+      this.updateId(target);
+      return;
+    }
     this.s.set(
       name,
       target.type === "checkbox" ? target.checked : target.value,
