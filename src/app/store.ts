@@ -85,12 +85,14 @@ export class Store {
       return "validation.invalidEmail";
     if (field.type === "phone" && !/^\+?[\d\s()-]{7,20}$/.test(str))
       return "validation.invalidPhone";
-    if (field.type === "id" && !/^\d{3}-\d{4}-\d{7}-\d$/.test(str))
-      return "validation.invalidDocumentNumber";
+    if (field.type === "id" && !/^784-\d{4}-\d{7}-\d$/.test(str))
+      return "validation.invalidEmiratesId";
     if (
       field.type === "date" &&
-      (Number.isNaN(Date.parse(str)) ||
-        str > new Date().toISOString().slice(0, 10))
+      (!/^\d{4}-\d{2}-\d{2}$/.test(str) ||
+        Number.isNaN(Date.parse(str)) ||
+        new Date(str + 'T12:00:00').getDate() !== Number(str.slice(8, 10)) ||
+        str > `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`)
     )
       return "validation.invalidDate";
     if (

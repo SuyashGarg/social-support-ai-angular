@@ -19,7 +19,7 @@ export const formSteps: FormStep[] = [
         name: "nationalId",
         labelKey: "fields.profile.nationalId",
         placeholderKey: "fields.profile.nationalIdPlaceholder",
-        pattern: "\\d{3}-\\d{4}-\\d{7}-\\d",
+        pattern: "784-\\d{4}-\\d{7}-\\d",
         inputMode: "numeric",
         required: true,
       },

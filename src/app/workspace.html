@@ -85,7 +85,11 @@
           (click)="s.assist(field)"
         >
           ✧ {{s.loading()?s.t('app.generating'):s.t('app.helpMeWrite')}}</button
-        >} @else if(field.type==='country'){<select
+        >} @else if(field.type==='date'){<app-date-picker
+          [fieldId]="field.id" [value]="value(field.name)"
+          [invalid]="!!s.errors()[field.name]"
+          (valueChange)="s.set(field.name,$event)"
+        /> } @else if(field.type==='country'){<select
           [id]="field.id"
           [value]="value(field.name)"
           (change)="change($event,field.name)"
@@ -123,10 +127,9 @@
           }</select
         >} @else{<input
           [id]="field.id"
-          [type]="field.type==='date'?'date':field.type==='email'?'email':field.type==='phone'?'tel':field.inputMode==='numeric'&&field.type!=='id'?'number':'text'"
+          [type]="field.type==='email'?'email':field.type==='phone'?'tel':field.inputMode==='numeric'&&field.type!=='id'?'number':'text'"
           (beforeinput)="beforeIdInput($event,field.name)"
           [attr.inputmode]="field.inputMode || null"
-          [attr.max]="field.type==='date'?today:null"
           [attr.min]="field.inputMode==='numeric'?0:null"
           [value]="value(field.name)"
           (input)="change($event,field.name)"

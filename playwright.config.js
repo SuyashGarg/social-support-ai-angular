@@ -4,8 +4,9 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:4200",
     launchOptions: {
-      executablePath: "/usr/bin/chromium",
-      args: ["--no-sandbox"],
+      ...(process.env.PLAYWRIGHT_EXECUTABLE_PATH
+        ? { executablePath: process.env.PLAYWRIGHT_EXECUTABLE_PATH }
+        : {}),
     },
   },
   webServer: {

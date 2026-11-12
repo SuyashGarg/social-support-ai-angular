@@ -1,3 +1,5 @@
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
 * {
   box-sizing: border-box;
 }
@@ -348,4 +350,27 @@ dd {
     align-items: flex-start;
     flex-direction: column;
   }
+}
+
+/* Match the Material date input to the surrounding form controls. */
+app-date-picker input.mat-mdc-input-element {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  min-height: 0;
+  background: transparent;
+  outline: none;
+}
+app-date-picker .mat-mdc-form-field { font: inherit; }
+app-date-picker .mat-mdc-text-field-wrapper { background: white; }
+
+app-date-picker input.mat-mdc-input-element::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+  font-size: 13px;
+}
+app-date-picker .mat-mdc-text-field-wrapper:focus-within {
+  outline: 2px solid #64748b;
+  outline-offset: 2px;
+  border-radius: 6px;
 }

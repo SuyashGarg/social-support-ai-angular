@@ -18,11 +18,12 @@ Open http://localhost:4200. Angular proxies `/api` to the Express server at port
 ```sh
 npm run build
 npm test
+npx playwright install chromium
 npm run test:e2e
 npm run start:production
 ```
 
-The production server serves both the Angular build and API on port 3001. The browser test configuration uses system Chromium; change `executablePath` for your environment. Deploy behind HTTPS. For a public deployment, add your organization's authentication and shared rate-limit store; the included per-IP limiter is in memory.
+The production server serves both the Angular build and API on port 3001. Browser tests use Playwright-managed Chromium by default. Run `npx playwright install chromium` once to install it. To use an existing browser instead, set `PLAYWRIGHT_EXECUTABLE_PATH` to its executable path. Deploy behind HTTPS. For a public deployment, add your organization's authentication and shared rate-limit store; the included per-IP limiter is in memory.
 
 ## Migration
 

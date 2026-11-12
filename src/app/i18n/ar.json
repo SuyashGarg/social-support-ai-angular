@@ -30,6 +30,7 @@
     "yourRequest": "طلبك"
   },
   "validation": {
+    "invalidEmiratesId": "أدخل رقم هوية إماراتية مكوّنًا من 15 رقمًا يبدأ بـ 784 (784-XXXX-XXXXXXX-X).",
     "required": "مطلوب",
     "invalidEmail": "بريد إلكتروني غير صحيح",
     "invalidPhone": "رقم هاتف غير صحيح",
@@ -46,8 +47,8 @@
     "profile": {
       "fullName": "الاسم",
       "fullNamePlaceholder": "أدخل الاسم الكامل",
-      "nationalId": "الرقم الوطني",
-      "nationalIdPlaceholder": "123-4567-1234567-1",
+      "nationalId": "رقم الهوية الإماراتية",
+      "nationalIdPlaceholder": "784-XXXX-XXXXXXX-X",
       "dateOfBirth": "تاريخ الميلاد",
       "dateOfBirthPlaceholder": "يوم/شهر/سنة",
       "gender": "الجنس",

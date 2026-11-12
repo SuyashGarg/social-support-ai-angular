@@ -7,6 +7,7 @@ import {
   RouterOutlet,
 } from "@angular/router";
 import { Store } from "./store";
+import { DatePickerComponent } from "./date-picker.component";
 import { Country, State } from "country-state-city";
 @Component({
   selector: "app-root",
@@ -45,7 +46,7 @@ export class AppComponent {
 @Component({
   selector: "app-workspace",
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, DatePickerComponent],
   templateUrl: "./workspace.html",
 })
 export class WorkspaceComponent implements OnDestroy {

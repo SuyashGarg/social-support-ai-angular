@@ -134,3 +134,81 @@ test("National ID keeps its mask during typing, paste and editing in both langua
   await page.reload();
   await expect(id).toHaveValue("784-1990-1234567-1");
 });
+
+
+test("Emirates ID rejects incomplete numbers and non-UAE prefixes in both languages", async ({ page }) => {
+  await page.goto("/");
+  const id = page.locator("#nationalId");
+  const next = page.locator('button[type="submit"]');
+  for (const value of ["78419901234567", "123199012345671"]) {
+    await id.fill(value);
+    await next.click();
+    await expect(id).toHaveAttribute("aria-invalid", "true");
+    await expect(page.getByText("Enter a 15-digit Emirates ID starting with 784 (784-XXXX-XXXXXXX-X).", { exact: true })).toBeVisible();
+    await expect(page).toHaveURL(/step\/0/);
+  }
+  await page.getByRole("button", { name: "Change language" }).click();
+  await expect(page.getByText("أدخل رقم هوية إماراتية مكوّنًا من 15 رقمًا يبدأ بـ 784 (784-XXXX-XXXXXXX-X).", { exact: true })).toBeVisible();
+  await id.fill("٧٨٤١٩٩٠١٢٣٤٥٦٧١");
+  await next.click();
+  await expect(id).toHaveValue("784-1990-1234567-1");
+  await expect(id).toHaveAttribute("aria-invalid", "false");
+});
+
+
+test('Material datepicker selects DOB without moving the form and restores focus', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-11-12T12:00:00Z'));
+  await page.goto('/');
+  const field = page.locator('#dateOfBirth');
+  const before = await page.locator('#phone').boundingBox();
+  await page.getByRole('button', {name: 'Open calendar', exact: true}).click();
+  const calendar = page.locator('mat-calendar');
+  await expect(calendar).toBeVisible();
+  await expect(page.locator('.cdk-overlay-pane')).toBeVisible();
+  const after = await page.locator('#phone').boundingBox();
+  expect(after.y).toBe(before.y);
+  await expect(calendar.locator('.mat-calendar-period-button')).toContainText('NOV 2026');
+  await calendar.getByRole('button', { name: 'Choose year', exact: true }).click();
+  await calendar.getByRole('button', { name: 'Previous years', exact: true }).click();
+  const year = calendar.locator('.mat-calendar-body-cell').filter({hasText: /^\s*1996\s*$/});
+  await year.click();
+  await calendar.locator('.mat-calendar-body-cell').filter({hasText: /^\s*JAN\s*$/i}).click();
+  await calendar.locator('.mat-calendar-body-cell').filter({hasText: /^\s*15\s*$/}).click();
+  await expect(calendar).not.toBeVisible();
+  await expect(field).toHaveValue('15/01/1996');
+  await expect(page.getByRole('button', {name: 'Open calendar', exact: true})).toBeFocused();
+  await page.reload();
+  await expect(field).toHaveValue('15/01/1996');
+  await page.getByRole('button', {name: 'Open calendar', exact: true}).click();
+  await expect(calendar.locator('.mat-calendar-period-button')).toContainText('JAN 1996');
+  await page.keyboard.press('Escape');
+  await expect(calendar).not.toBeVisible();
+  await expect(page.getByRole('button', {name: 'Open calendar', exact: true})).toBeFocused();
+  await page.getByRole('button', { name: 'Change language' }).click();
+  await page.getByRole('button', { name: 'فتح التقويم' }).click();
+  await expect(calendar).toBeVisible();
+  await expect(page.locator('.cdk-overlay-container [dir="rtl"]')).toBeVisible();
+});
+
+
+test('DOB accepts typed dates, retains invalid input, and rejects future dates', async ({page}) => {
+  await page.goto('/');
+  const field = page.locator('#dateOfBirth');
+  await field.fill('15/01/1996');
+  await field.press('Tab');
+  await expect(field).toHaveValue('15/01/1996');
+  await expect(page.locator('mat-calendar')).not.toBeVisible();
+  await page.reload();
+  await expect(field).toHaveValue('15/01/1996');
+  for (const value of ['31/02/1996', '12/11/2999', '15/01']) {
+    await field.fill(value);
+    await field.press('Tab');
+    await page.getByRole('button', {name:'Next',exact:true}).click();
+    await expect(field).toHaveValue(value);
+    await expect(field).toHaveAttribute('aria-invalid','true');
+  }
+  await field.fill('');
+  await field.press('Tab');
+  await page.getByRole('button', {name:'Next',exact:true}).click();
+  await expect(field).toHaveAttribute('aria-invalid','false');
+});

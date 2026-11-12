@@ -30,6 +30,7 @@
     "yourRequest": "Your request"
   },
   "validation": {
+    "invalidEmiratesId": "Enter a 15-digit Emirates ID starting with 784 (784-XXXX-XXXXXXX-X).",
     "required": "Required",
     "invalidEmail": "Invalid email",
     "invalidPhone": "Invalid phone",
@@ -46,8 +47,8 @@
     "profile": {
       "fullName": "Name",
       "fullNamePlaceholder": "Enter full name",
-      "nationalId": "National ID",
-      "nationalIdPlaceholder": "123-4567-1234567-1",
+      "nationalId": "Emirates ID",
+      "nationalIdPlaceholder": "784-XXXX-XXXXXXX-X",
       "dateOfBirth": "Date of Birth",
       "dateOfBirthPlaceholder": "dd/mm/yyyy",
       "gender": "Gender",
