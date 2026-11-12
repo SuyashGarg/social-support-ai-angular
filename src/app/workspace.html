@@ -1,0 +1,238 @@
+@if(s.storageError()){
+<p role="alert">
+  {{s.text('Browser storage is unavailable. Your data may not survive a
+  refresh.','التخزين غير متاح. قد لا يتم حفظ بياناتك عند تحديث الصفحة.')}}
+</p>
+} @if(page()==='step') {
+<div class="intro">
+  <p class="eyebrow">{{s.text('SUPPORT STARTS HERE','الدعم يبدأ هنا')}}</p>
+  <h1>{{s.t('app.submitRequestTitle')}}</h1>
+  <p>
+    {{s.text('Tell us about yourself and the support you need. We’ll help you
+    find the words.','أخبرنا عن نفسك والدعم الذي تحتاجه. سنساعدك في التعبير عن
+    احتياجاتك.')}}
+  </p>
+</div>
+<ol class="steps">
+  @for(item of s.steps;track item.id;let i=$index){
+  <li
+    [class.active]="i===step()"
+    [class.done]="i<step()"
+    [attr.aria-current]="i===step()?'step':null"
+  >
+    <span>{{ i < step() ? '✓' : i + 1 }}</span>
+    <div>{{s.t(item.titleKey)}}</div>
+  </li>
+  }
+</ol>
+<section class="card">
+  <div class="card-heading">
+    <p class="eyebrow">{{s.t('app.step')}} {{step()+1}} / 3</p>
+    <h2>{{s.t(current().titleKey)}}</h2>
+  </div>
+  <form
+    (submit)="$event.preventDefault();step()===2?submit():next()"
+    novalidate
+  >
+    <div class="fields">
+      @for(field of current().elements;track field.id){
+      <div
+        class="field"
+        [class.wide]="field.type==='textarea'||field.type==='checkbox'||field.type==='radio'"
+      >
+        @if(field.type==='checkbox'){<label class="check"
+          ><input
+            [id]="field.id"
+            type="checkbox"
+            [checked]="!!s.values()[field.name]"
+            (change)="change($event,field.name)"
+            [attr.aria-invalid]="!!s.errors()[field.name]"
+          />{{s.t(field.labelKey)}} *</label
+        >} @else if(field.type==='radio'){
+        <fieldset>
+          <legend>{{s.t(field.labelKey)}} *</legend>
+          <div class="radio-row">
+            @for(option of field.options;track option.value){<label
+              class="check"
+              ><input
+                type="radio"
+                [name]="field.name"
+                [value]="option.value"
+                [checked]="value(field.name)===option.value"
+                (change)="change($event,field.name)"
+                [attr.aria-invalid]="!!s.errors()[field.name]"
+              />{{s.t(option.labelKey)}}</label
+            >}
+          </div>
+        </fieldset>
+        } @else{<label [for]="field.id"
+          >{{s.t(field.labelKey)}} @if(field.required){<span aria-hidden="true"
+            >*</span
+          >}</label
+        >
+        @if(field.type==='textarea'){<textarea
+          [id]="field.id"
+          rows="5"
+          maxlength="6000"
+          [value]="value(field.name)"
+          (input)="change($event,field.name)"
+          [placeholder]="s.t(field.placeholderKey||field.labelKey)"
+        ></textarea
+        ><button
+          class="assist"
+          type="button"
+          [disabled]="s.loading()||!value(field.name).trim()"
+          (click)="s.assist(field)"
+        >
+          ✧ {{s.loading()?s.t('app.generating'):s.t('app.helpMeWrite')}}</button
+        >} @else if(field.type==='country'){<select
+          [id]="field.id"
+          [value]="value(field.name)"
+          (change)="change($event,field.name)"
+        >
+          <option value="">
+            {{s.t(field.placeholderKey||field.labelKey)}}
+          </option>
+          @for(country of countries;track country.isoCode){
+          <option [value]="country.isoCode">
+            {{countryName(country.isoCode)}}
+          </option>
+          }</select
+        >} @else if(field.type==='state'&&states().length){<select
+          [id]="field.id"
+          [value]="value(field.name)"
+          (change)="change($event,field.name)"
+        >
+          <option value="">
+            {{s.t(field.placeholderKey||field.labelKey)}}
+          </option>
+          @for(state of states();track state.isoCode){
+          <option [value]="state.name">{{state.name}}</option>
+          }</select
+        >} @else if(field.options){<select
+          [id]="field.id"
+          [value]="value(field.name)"
+          (change)="change($event,field.name)"
+          [attr.aria-invalid]="!!s.errors()[field.name]"
+        >
+          <option value="">
+            {{s.t(field.placeholderKey||field.labelKey)}}
+          </option>
+          @for(option of field.options;track option.value){
+          <option [value]="option.value">{{s.t(option.labelKey)}}</option>
+          }</select
+        >} @else{<input
+          [id]="field.id"
+          [type]="field.type==='date'?'date':field.type==='email'?'email':field.type==='phone'?'tel':field.inputMode==='numeric'&&field.type!=='id'?'number':'text'"
+          [attr.max]="field.type==='date'?today:null"
+          [attr.min]="field.inputMode==='numeric'?0:null"
+          [value]="value(field.name)"
+          (input)="change($event,field.name)"
+          [placeholder]="field.placeholderKey?s.t(field.placeholderKey):''"
+          [required]="!!field.required"
+          [attr.aria-invalid]="!!s.errors()[field.name]"
+          [attr.aria-describedby]="s.errors()[field.name]?field.id+'-error':null"
+          [attr.dir]="['email','phone','id'].includes(field.type)?'ltr':null"
+        />}} @if(s.errors()[field.name]){<small
+          class="error"
+          [id]="field.id+'-error'"
+          >{{s.t(s.errors()[field.name])}}</small
+        >}
+      </div>
+      }
+    </div>
+    @if(s.apiError()){
+    <p class="error" role="alert">{{s.apiError()}}</p>
+    }
+    <div class="actions">
+      <button
+        type="button"
+        [disabled]="step()===0"
+        [routerLink]="['/step',step()-1]"
+      >
+        {{s.t('app.back')}}</button
+      ><button
+        class="primary"
+        type="submit"
+        [disabled]="step()===2&&!s.values()['consent']"
+      >
+        {{s.t(step()===2?'app.submit':'app.next')}}
+      </button>
+    </div>
+  </form>
+</section>
+<p class="note">
+  {{s.text('Drafts and history stay in this browser session. AI suggestions use
+  only the description you enter.','تُحفظ المسودات والسجل في جلسة المتصفح هذه.
+  تستخدم اقتراحات الذكاء الاصطناعي الوصف الذي تدخله فقط.')}}
+</p>
+} @if(page()==='history'){
+<div class="intro"><h1>{{s.t('app.history')}}</h1></div>
+<section class="card">
+  @if(!s.history().length){
+  <p>{{s.t('app.noHistory')}}</p>
+  }@for(entry of s.history();track entry.id){
+  <article class="history-row">
+    <div>
+      <strong>{{entry.data['fullName']}}</strong>
+      <p>{{entry.submittedAt|date:'medium'}}</p>
+    </div>
+    <a [routerLink]="['/review',entry.id]">{{s.t('app.viewDetails')}}</a>
+  </article>
+  }<button class="primary" (click)="reset()">{{s.t('app.startOver')}}</button>
+</section>
+} @if(page()==='review'){
+<section class="card">
+  <div class="review-heading">
+    <h1>{{s.t('app.yourRequest')}}</h1>
+    <button class="primary" (click)="reset()">{{s.t('app.startOver')}}</button>
+  </div>
+  @if(entry();as record){
+  <p class="success">
+    ✓ {{s.text('Request saved in this browser session.','تم حفظ الطلب في جلسة
+    المتصفح هذه.')}}
+  </p>
+  @for(section of s.steps;track section.id){
+  <h2>{{s.t(section.titleKey)}}</h2>
+  <dl>
+    @for(field of section.elements;track field.id){
+    <div>
+      <dt>{{s.t(field.labelKey)}}</dt>
+      <dd>{{s.display(field,record.data)}}</dd>
+    </div>
+    }
+  </dl>
+  }}@else{
+  <p>{{s.t('app.noData')}}</p>
+  }<a routerLink="/history">{{s.t('app.history')}}</a>
+</section>
+} @if(s.suggestionField()){
+<div class="modal-backdrop">
+  <section
+    class="dialog card"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="suggestion-title"
+    (keydown.escape)="s.suggestionField.set('')"
+  >
+    <h2 id="suggestion-title">{{s.t('app.suggestion')}}</h2>
+    <label for="suggestion">{{s.t('app.editSuggestion')}}</label
+    ><textarea
+      id="suggestion"
+      rows="9"
+      [value]="s.suggestion()"
+      (input)="s.suggestion.set($any($event.target).value)"
+    ></textarea>
+    <div class="actions">
+      <button (click)="s.suggestionField.set('')">{{s.t('app.discard')}}</button
+      ><button
+        class="primary"
+        [disabled]="!s.suggestion().trim()"
+        (click)="s.accept()"
+      >
+        {{s.t('app.accept')}}
+      </button>
+    </div>
+  </section>
+</div>
+}
