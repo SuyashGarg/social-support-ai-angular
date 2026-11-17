@@ -212,3 +212,42 @@ test('DOB accepts typed dates, retains invalid input, and rejects future dates',
   await page.getByRole('button', {name:'Next',exact:true}).click();
   await expect(field).toHaveAttribute('aria-invalid','false');
 });
+
+test('DOB formats digits while typing, editing and pasting', async ({ page }) => {
+  await page.goto('/');
+  const field = page.locator('#dateOfBirth');
+  await field.pressSequentially('15011996');
+  await expect(field).toHaveValue('15/01/1996');
+  await field.press('Tab');
+  await page.reload();
+  await expect(field).toHaveValue('15/01/1996');
+  await field.evaluate(el => { el.focus(); el.setSelectionRange(3, 3); });
+  await field.press('Backspace');
+  await expect(field).toHaveValue('10/11/996');
+  await field.fill('١٥٠١١٩٩٦');
+  await expect(field).toHaveValue('15/01/1996');
+  await field.fill('۱۵۰۱۱۹۹۶');
+  await expect(field).toHaveValue('15/01/1996');
+  await field.evaluate(el => { el.focus(); el.setSelectionRange(3, 5); });
+  await field.pressSequentially('02');
+  await expect(field).toHaveValue('15/02/1996');
+  await field.press('Tab');
+  await page.reload();
+  await expect(field).toHaveValue('15/02/1996');
+});
+
+
+test('DOB accepts manual separators for single-digit days and months', async ({ page }) => {
+  await page.goto('/');
+  const field = page.locator('#dateOfBirth');
+  await field.pressSequentially('8/9/1989');
+  await expect(field).toHaveValue('08/09/1989');
+  await field.press('Tab');
+  await page.reload();
+  await expect(field).toHaveValue('08/09/1989');
+  await field.fill('8/9/1989');
+  await expect(field).toHaveValue('08/09/1989');
+  await field.fill('');
+  await field.pressSequentially('15/01/1996');
+  await expect(field).toHaveValue('15/01/1996');
+});

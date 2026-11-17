@@ -20,7 +20,7 @@ import { Store } from './store';
         [placeholder]="s.text('DD/MM/YYYY', 'يوم/شهر/سنة')"
         [attr.aria-invalid]="invalid()"
         [attr.aria-describedby]="invalid() ? fieldId() + '-error' : null"
-        (input)="typed(dateInput.value)" (dateChange)="select($event.value, dateInput.value)" />
+        (beforeinput)="beforeInput($event)" (input)="typed(dateInput)" (dateChange)="select($event.value, dateInput.value)" />
       <mat-datepicker-toggle matIconSuffix [for]="picker" />
       <mat-datepicker #picker startView="month" [startAt]="selected() || today" />
     </mat-form-field>
@@ -98,7 +98,58 @@ export class DatePickerComponent {
       this.intl.changes.next();
     });
   }
-  typed(raw: string) { this.select(this.adapter.parse(raw, null), raw); }
+  private digits(raw: string) {
+    return raw.replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x660))
+      .replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x6f0))
+      .replace(/\D/g, '');
+  }
+  beforeInput(event: Event) {
+    const input = event as InputEvent;
+    const target = input.target as HTMLInputElement;
+    const start = target.selectionStart ?? 0;
+    if (start !== target.selectionEnd) return;
+    if (input.data === '/' && target.value[start] === '/') {
+      event.preventDefault();
+      target.setSelectionRange(start + 1, start + 1);
+      return;
+    }
+    if (input.inputType === 'deleteContentBackward' && target.value[start - 1] === '/') {
+      event.preventDefault();
+      target.value = target.value.slice(0, start - 2) + target.value.slice(start);
+      target.setSelectionRange(start - 2, start - 2);
+      this.typed(target);
+    } else if (input.inputType === 'deleteContentForward' && target.value[start] === '/') {
+      event.preventDefault();
+      target.value = target.value.slice(0, start) + target.value.slice(start + 2);
+      target.setSelectionRange(start, start);
+      this.typed(target);
+    }
+  }
+  typed(target: HTMLInputElement) {
+    // A typed separator completes a one-digit day or month.
+    const normalize = (raw: string) => raw.split('/').map((part, index, parts) => {
+      const digits = this.digits(part);
+      return index < 2 && index < parts.length - 1 && digits.length === 1
+        ? digits.padStart(2, '0') : digits;
+    }).join('/');
+    const prefix = normalize(target.value.slice(0, target.selectionStart ?? target.value.length));
+    const normalized = normalize(target.value);
+    const digitsBefore = this.digits(prefix).length;
+    const digits = this.digits(normalized).slice(0, 8);
+    let formatted = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join('/');
+    if (normalized.endsWith('/') && (digits.length === 2 || digits.length === 4)) formatted += '/';
+    let caret = 0, count = 0;
+    while (caret < formatted.length && count < digitsBefore) {
+      if (/\d/.test(formatted[caret])) count++;
+      caret++;
+    }
+    if (prefix.endsWith('/') && formatted[caret] === '/') caret++;
+    const parsed = this.adapter.parse(formatted, null);
+    this.model.set(parsed && this.adapter.isValid(parsed) ? parsed : null);
+    target.value = formatted;
+    target.setSelectionRange(caret, caret);
+    this.select(parsed, formatted);
+  }
   select(date: Date | null, raw: string) {
     const value = date && this.adapter.isValid(date) ? `${String(date.getFullYear()).padStart(4, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : raw.trim();
     this.lastEmitted = value;
