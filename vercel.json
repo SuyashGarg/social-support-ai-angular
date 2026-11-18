@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "angular",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/social-support-ai/browser",
+  "functions": {
+    "api/openAi.js": { "maxDuration": 60 }
+  },
+  "routes": [
+    { "src": "/api/openAi", "dest": "/api/openAi.js" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

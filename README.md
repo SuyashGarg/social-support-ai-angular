@@ -1,6 +1,6 @@
 # Social Support AI — Angular 18
 
-A separate Angular implementation of [SuyashGarg/social-support-ai](https://github.com/SuyashGarg/social-support-ai), based on source commit `960abb0440c5a06369418b0978b5cfa8e0cec78c`. The React repository is unchanged.
+A separate Angular implementation of [SuyashGarg/social-support-ai](https://github.com/SuyashGarg/social-support-ai), 
 
 ## Run locally
 
