@@ -27,6 +27,7 @@ export class Store {
   readonly errors = signal<Record<string, string>>({});
   readonly storageError = signal(false);
   readonly loading = signal(false);
+  readonly generatingField = signal("");
   readonly suggestion = signal("");
   readonly suggestionField = signal("");
   readonly apiError = signal("");
@@ -142,6 +143,7 @@ export class Store {
   }
   async assist(field: FormElement) {
     if (this.loading()) return;
+    this.generatingField.set(field.name);
     this.loading.set(true);
     this.apiError.set("");
     this.suggestion.set("");
@@ -169,6 +171,7 @@ export class Store {
         ),
       );
     } finally {
+      this.generatingField.set("");
       this.loading.set(false);
     }
   }

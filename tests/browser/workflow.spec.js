@@ -251,3 +251,30 @@ test('DOB accepts manual separators for single-digit days and months', async ({ 
   await field.pressSequentially('15/01/1996');
   await expect(field).toHaveValue('15/01/1996');
 });
+
+test('only the active AI writing button shows Generating while all assist buttons are disabled', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => sessionStorage.setItem('ss-angular-draft', JSON.stringify({
+    fullName: 'Test Applicant', nationalId: '784-1990-1234567-1', gender: 'male',
+    phone: '+971501234567', email: 'test@example.com', maritalStatus: 'single',
+    employmentStatus: 'unemployed', monthlyIncome: '0', housingStatus: 'rented',
+    financialSituation: 'I need help with rent.', employmentCircumstances: 'I lost my job.',
+    reasonForApplying: 'I need temporary support.',
+  })));
+  await page.goto('/step/2');
+  let respond;
+  const pending = new Promise(resolve => { respond = resolve; });
+  await page.route('**/api/openAi', async route => {
+    await pending;
+    await route.fulfill({ json: { text: 'I need temporary help with rent.' } });
+  });
+  const buttons = page.locator('button.assist');
+  await buttons.nth(0).click();
+  await expect(buttons.nth(0)).toContainText('Generating');
+  for (let index = 0; index < 3; index++) await expect(buttons.nth(index)).toBeDisabled();
+  await expect(buttons.nth(1)).toContainText('Help me write');
+  await expect(buttons.nth(2)).toContainText('Help me write');
+  respond();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(buttons.nth(0)).toContainText('Help me write');
+});

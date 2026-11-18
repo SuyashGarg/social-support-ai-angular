@@ -84,7 +84,7 @@
           [disabled]="s.loading()||!value(field.name).trim()"
           (click)="s.assist(field)"
         >
-          ✧ {{s.loading()?s.t('app.generating'):s.t('app.helpMeWrite')}}</button
+          ✧ {{s.generatingField()===field.name?s.t('app.generating'):s.t('app.helpMeWrite')}}</button
         >} @else if(field.type==='date'){<app-date-picker
           [fieldId]="field.id" [value]="value(field.name)"
           [invalid]="!!s.errors()[field.name]"
